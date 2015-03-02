@@ -39,16 +39,17 @@ function commit2node_github_webhook_event($payload, &$response, $args) {
 function commit2node_create_commitnode($payload) {
   $node = new stdClass();
   $node->type = 'commit';
-  $node->title = truncate_utf8($payload['commits']['message'], 254, FALSE, TRUE);
+  $node->title = truncate_utf8($payload['head_commit']['message'], 254, FALSE, TRUE);
   $node->language = LANGUAGE_NONE;
-  $node->path = array('alias' => 'commit/' . $payload['commits']['message']);
+  $node->path = array('alias' => 'commit/' . $payload['head_commit']['id']);
   node_object_prepare($node); // Set some default values.
   $node->uid = 1;
 
   // Custom field values
-  $node->field_commit_author[$node->language][0]['value'] = $payload['commits']['committer']['name'];
-  $node->field_commit_message[$node->language][0]['value'] = $payload['commits']['message'];
+  $node->field_commit_author[$node->language][0]['value'] = $payload['head_commit']['author']['name'];
+  $node->field_commit_message[$node->language][0]['value'] = $payload['head_commit']['message'];
   $node->field_commit_repository[$node->language][0]['value'] = $payload['repository']['name'];
+  $node->field_commit_id[$node->language][0]['value'] = $payload['head_commit']['id'];
 
   // Prepare the node for submit
   $node = node_submit($node);
