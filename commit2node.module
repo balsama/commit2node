@@ -72,6 +72,7 @@ function commit2node_create_commitnode($repo, $compare_url, $refs, $commit) {
   $node->field_commit_id[$node->language][0]['value'] = $commit['id'];
   $node->field_commit_compare_url[$node->language][0]['url'] = $compare_url;
   $node->field_repo_is_private[$node->language][0]['value'] = $repo['private'] ? 1:0;
+  $node->field_commit_branch[$node->language][0]['value'] = array_pop($refs);
 
   // Prepare the node for submit
   $node = node_submit($node);
