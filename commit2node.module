@@ -23,7 +23,9 @@ function commit2node_github_webhook_event($payload, &$response, $args) {
   // ...
 
   if (is_array($payload['commits'])) {
-    // This POST has to do with a commit, so we 
+    // This POST has to do with a commit, so we prepare the general data and
+    // create a node for each commit in this push. (A single push can contain
+    // many commits.)
     $repo = $payload['repository'];
     $compare_url = $payload['compare'];
     foreach($payload['commits'] as $commit) {
