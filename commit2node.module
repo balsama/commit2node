@@ -35,7 +35,7 @@ function commit2node_github_webhook_event($payload, &$response, $args) {
     // Store the fact that the node was created.
     $placeholders = array(
       '%name' => $payload['repository']['name'],
-      '%commit_id' => $payload['commits']['id'],
+      '%commit_id' => $payload['head_commit']['id'],
     );
     watchdog('commit2node', 'Created new Commit Node from repository %name. Commit ID: %commit_id', $placeholders);
   }
@@ -45,6 +45,7 @@ function commit2node_github_webhook_event($payload, &$response, $args) {
  * Creates a new node from date provided by GitHub webhook.
  */
 function commit2node_create_commitnode($payload) {
+  cache_set('commit2node_foo', $payload);
   $node = new stdClass();
   $node->type = 'commit';
   $node->title = truncate_utf8($payload['head_commit']['message'], 254, FALSE, TRUE);
@@ -66,5 +67,11 @@ function commit2node_create_commitnode($payload) {
 
   // Save the node and return the new node's ID.
   return node_save($node);
+}
+
+// Some troubleshooting temp stuff
+function commit2node_init() {
+  dpm(cache_get('commit2node_foo'));
+  drupal_set_message('foo');
 }
 
