@@ -22,30 +22,31 @@ function commit2node_github_webhook_event($payload, &$response, $args) {
   // Check that our response is OK
   // ...
 
-  // Check to see if another node already has this commit ID.
-  // ...
-  // If so, update it as a revision
-  // ...
-  // Else, create a new node
-
   if (is_array($payload['commits'])) {
+    // This POST has to do with a commit, so we 
     $repo = $payload['repository'];
     $compare_url = $payload['compare'];
     foreach($payload['commits'] as $commit) {
       commit2node_create_commitnode($repo, $compare_url, $commit);
     }
-
-    // Store the fact that the node was created.
-    $placeholders = array(
-      '%name' => $payload['repository']['name'],
-      '%commit_id' => $payload['head_commit']['id'],
-    );
-    watchdog('commit2node', 'Created new Commit Node from repository %name. Commit ID: %commit_id', $placeholders);
+    // No need to log that the node was created since node_save (within
+    // commit2node_create_commitnode()) will log that for us.
   }
 }
 
 /**
- * Creates a new node from date provided by GitHub webhook.
+ * Creates a new node from data provided by GitHub webhook.
+ *
+ * @param array $repo
+ *   The repo section of the array posted by GitHub. This is the same for all
+ *   commits in a single push.
+ *
+ * @param string $compare_url
+ *   The location of the DIFF for the entire push. Again, same for all commits
+ *   within a push.
+ *
+ * @param array $commit
+ *   A single commit from the commits array posted by GitHub.
  */
 function commit2node_create_commitnode($repo, $compare_url, $commit) {
   $node = new stdClass();
@@ -53,7 +54,7 @@ function commit2node_create_commitnode($repo, $compare_url, $commit) {
   $node->title = truncate_utf8($commit['message'], 254, FALSE, TRUE);
   $node->language = LANGUAGE_NONE;
   $node->path = array('alias' => 'commit/' . $commit['id']);
-  node_object_prepare($node); // Set some default values.
+  node_object_prepare($node);
   $node->uid = 1;
 
   // Custom field values
@@ -68,11 +69,12 @@ function commit2node_create_commitnode($repo, $compare_url, $commit) {
   $node = node_submit($node);
 
   // Save the node and return the new node's ID.
-  return node_save($node);
-}
+  if ($nid = node_save($node)) {
+    return $nid;
+  }
 
-// Some troubleshooting temp stuff
-function commit2node_init() {
-  dpm(cache_get('commit2node_foo'));
+  // If we got this far, the node_save was unsuccessful for some reason.
+  watchdog('commit2node', 'Saving commit as node encountered an error.');
+  return FALSE;
 }
 
