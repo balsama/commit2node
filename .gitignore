@@ -1,0 +1,15 @@
+# Ignore paths that contain user-generated content.
+*/files
+*/private
+default/settings.php
+
+# SASS
+sass-cache/
+.sass-cache/
+
+# OS X
+*.swp
+._.*
+._*
+.DS_Store
+
