@@ -1,0 +1,8 @@
+<?php
+function commit2node_github_webhook_event($payload, &$response, $args) {
+  watchdog('commit2node', 'Repository Name: %name', array('%name' => $payload['repository']['name']));
+}
+
+function commit2node_init() {
+  drupal_set_message('foo');
+}
