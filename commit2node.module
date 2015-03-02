@@ -58,7 +58,7 @@ function commit2node_create_commitnode($payload) {
   $node->field_commit_message[$node->language][0]['value'] = $payload['head_commit']['message'];
   $node->field_commit_repository[$node->language][0]['value'] = $payload['repository']['name'];
   $node->field_commit_id[$node->language][0]['value'] = $payload['head_commit']['id'];
-  $node->field_commit_compare_url[$node->language][0]['value'] = $payload['compare'];
+  $node->field_commit_compare_url[$node->language][0]['url'] = $payload['compare'];
   $node->field_repo_is_private[$node->language][0]['value'] = $payload['repository']['private'] ? 1:0;
 
   // Prepare the node for submit
