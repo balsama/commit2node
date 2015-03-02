@@ -27,7 +27,7 @@ function commit2node_github_webhook_event($payload, &$response, $args) {
     // create a node for each commit in this push. (A single push can contain
     // many commits.)
     $repo = $payload['repository'];
-    $refs = explode('/' $payload['ref']);
+    $refs = explode('/', $payload['ref']);
     $compare_url = $payload['compare'];
     foreach($payload['commits'] as $commit) {
       commit2node_create_commitnode($repo, $compare_url, $refs, $commit);
