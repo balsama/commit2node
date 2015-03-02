@@ -57,11 +57,13 @@ function commit2node_github_webhook_event($payload, &$response, $args) {
  *   array should contain the actual branch name.
  */
 function commit2node_create_commitnode($repo, $compare_url, $refs, $commit) {
+  $branch = array_pop($refs);
+
   $node = new stdClass();
   $node->type = 'commit';
   $node->title = truncate_utf8($commit['message'], 254, FALSE, TRUE);
   $node->language = LANGUAGE_NONE;
-  $node->path = array('alias' => 'commit/' . array_pop($refs) . '/' . $commit['id']);
+  $node->path = array('alias' => 'commit/' . $branch . '/' . $commit['id']);
   node_object_prepare($node);
   $node->uid = 1;
 
@@ -72,7 +74,7 @@ function commit2node_create_commitnode($repo, $compare_url, $refs, $commit) {
   $node->field_commit_id[$node->language][0]['value'] = $commit['id'];
   $node->field_commit_compare_url[$node->language][0]['url'] = $compare_url;
   $node->field_repo_is_private[$node->language][0]['value'] = $repo['private'] ? 1:0;
-  $node->field_commit_branch[$node->language][0]['value'] = array_pop($refs);
+  $node->field_commit_branch[$node->language][0]['value'] = $branch;
 
   // Prepare the node for submit
   $node = node_submit($node);
