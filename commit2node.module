@@ -28,9 +28,12 @@ function commit2node_github_webhook_event($payload, &$response, $args) {
   // ...
   // Else, create a new node
 
-  if (isset($payload['head_commit'])) {
-    // If it's a commit, make a node out of it.
-    commit2node_create_commitnode($payload);
+  if (is_array($payload['commits'])) {
+    $repo = $payload['repository'];
+    $compare_url = $payload['compare'];
+    foreach($payload['commits'] as $commit) {
+      commit2node_create_commitnode($repo, $compare_url, $commit);
+    }
 
     // Store the fact that the node was created.
     $placeholders = array(
@@ -44,23 +47,22 @@ function commit2node_github_webhook_event($payload, &$response, $args) {
 /**
  * Creates a new node from date provided by GitHub webhook.
  */
-function commit2node_create_commitnode($payload) {
-  cache_set('commit2node_foo', $payload);
+function commit2node_create_commitnode($repo, $compare_url, $commit) {
   $node = new stdClass();
   $node->type = 'commit';
-  $node->title = truncate_utf8($payload['head_commit']['message'], 254, FALSE, TRUE);
+  $node->title = truncate_utf8($commit['message'], 254, FALSE, TRUE);
   $node->language = LANGUAGE_NONE;
-  $node->path = array('alias' => 'commit/' . $payload['head_commit']['id']);
+  $node->path = array('alias' => 'commit/' . $commit['id']);
   node_object_prepare($node); // Set some default values.
   $node->uid = 1;
 
   // Custom field values
-  $node->field_commit_author[$node->language][0]['value'] = $payload['head_commit']['author']['name'];
-  $node->field_commit_message[$node->language][0]['value'] = $payload['head_commit']['message'];
-  $node->field_commit_repository[$node->language][0]['value'] = $payload['repository']['name'];
-  $node->field_commit_id[$node->language][0]['value'] = $payload['head_commit']['id'];
-  $node->field_commit_compare_url[$node->language][0]['url'] = $payload['compare'];
-  $node->field_repo_is_private[$node->language][0]['value'] = $payload['repository']['private'] ? 1:0;
+  $node->field_commit_author[$node->language][0]['value'] = $commit['author']['name'];
+  $node->field_commit_message[$node->language][0]['value'] = $commit['message'];
+  $node->field_commit_repository[$node->language][0]['value'] = $repo['name'];
+  $node->field_commit_id[$node->language][0]['value'] = $commit['id'];
+  $node->field_commit_compare_url[$node->language][0]['url'] = $compare_url;
+  $node->field_repo_is_private[$node->language][0]['value'] = $repo['private'] ? 1:0;
 
   // Prepare the node for submit
   $node = node_submit($node);
