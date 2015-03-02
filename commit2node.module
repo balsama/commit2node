@@ -72,6 +72,5 @@ function commit2node_create_commitnode($payload) {
 // Some troubleshooting temp stuff
 function commit2node_init() {
   dpm(cache_get('commit2node_foo'));
-  drupal_set_message('foo');
 }
 
