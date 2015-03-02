@@ -27,9 +27,10 @@ function commit2node_github_webhook_event($payload, &$response, $args) {
     // create a node for each commit in this push. (A single push can contain
     // many commits.)
     $repo = $payload['repository'];
+    $refs = explode('/' $payload['ref']);
     $compare_url = $payload['compare'];
     foreach($payload['commits'] as $commit) {
-      commit2node_create_commitnode($repo, $compare_url, $commit);
+      commit2node_create_commitnode($repo, $compare_url, $refs, $commit);
     }
     // No need to log that the node was created since node_save (within
     // commit2node_create_commitnode()) will log that for us.
@@ -49,13 +50,18 @@ function commit2node_github_webhook_event($payload, &$response, $args) {
  *
  * @param array $commit
  *   A single commit from the commits array posted by GitHub.
+ *
+ * @param array $refs
+ *   The exploded value of the $payload['refs'] value passed by GitHub. This is
+ *   apparently the only place you can find the branch! The last element in the
+ *   array should contain the actual branch name.
  */
-function commit2node_create_commitnode($repo, $compare_url, $commit) {
+function commit2node_create_commitnode($repo, $compare_url, $refs, $commit) {
   $node = new stdClass();
   $node->type = 'commit';
   $node->title = truncate_utf8($commit['message'], 254, FALSE, TRUE);
   $node->language = LANGUAGE_NONE;
-  $node->path = array('alias' => 'commit/' . $commit['id']);
+  $node->path = array('alias' => 'commit/' . array_pop($refs) . '/' . $commit['id']);
   node_object_prepare($node);
   $node->uid = 1;
 
