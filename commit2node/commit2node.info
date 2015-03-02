@@ -1,0 +1,4 @@
+name = "Commit to Node"
+description = "Reacts to a commit via GitHub webhook and creates a node from the info in the commit."
+core = 7.x
+version = "7.x-1.0"
